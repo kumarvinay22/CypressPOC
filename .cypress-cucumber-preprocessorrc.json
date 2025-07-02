@@ -1,0 +1,6 @@
+{
+  "stepDefinitions": [
+    "features/step_definitions/**/*.{js,ts}",
+    "features/step_definitions/*.{js,ts}"
+  ]
+}

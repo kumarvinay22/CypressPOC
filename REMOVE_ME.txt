@@ -1,3 +1,0 @@
-Remove the following files after validation:
-- config/browsers.new.js
-- config/devices.js

@@ -1,5 +1,5 @@
 /**
- * Base TestAdapter for unified test automation (Cypress & Playwright)
+ * Base TestAdapter for Cypress test automation
  * Provides common interface and utility methods for adapters.
  */
 class TestAdapter {

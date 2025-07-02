@@ -1,41 +1,23 @@
 /**
- * Shared setup and utility functions for both Cypress and Playwright
- * This file doesn't import any runner-specific code, making it safe to use anywhere
+ * Shared setup and utility functions for Cypress
+ * Simplified from the original hybrid implementation
  */
 
-// Determine which test runner is active
+// Always return cypress as the test runner
 function getTestRunner() {
-    if (typeof Cypress !== 'undefined') {
-        return 'cypress';
-    } else if (process.env.TEST_RUNNER === 'playwright') {
-        return 'playwright';
-    } else {
-        // Default to playwright if can't determine
-        return 'playwright';
-    }
+    return 'cypress';
 }
 
-// Expose some common utilities
+// Expose utilities
 module.exports = {
     getTestRunner,
     
-    // Helper to check if we're using a specific runner
-    isCypress: () => getTestRunner() === 'cypress',
-    isPlaywright: () => getTestRunner() === 'playwright',
+    // Helper to check if we're using Cypress (always true now)
+    isCypress: () => true,
+    isPlaywright: () => false,
     
-    // Helper for conditional execution
+    // Helper for conditional execution (always returns cypressImpl)
     runnerSpecific: (cypressImpl, playwrightImpl) => {
-        const runner = getTestRunner();
-        return runner === 'cypress' ? cypressImpl : playwrightImpl;
-    },
-    
-    // Helper to load runner-specific module only when needed
-    requireAdapter: (adapterName) => {
-        if (getTestRunner() === 'cypress') {
-            return require(`../adapters/CypressAdapter`);
-        } else {
-            // Dynamically load the Playwright adapter only when needed
-            return require(`../adapters/PlaywrightAdapter`);
-        }
+        return cypressImpl;
     }
 };

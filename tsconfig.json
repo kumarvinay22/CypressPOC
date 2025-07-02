@@ -13,7 +13,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["node", "cypress", "@playwright/test", "@cucumber/cucumber"]
+    "types": ["node", "cypress", "@cucumber/cucumber"]
   },
   "include": [
     "src/**/*",
