@@ -1,6 +1,4 @@
-const BasePage = require('./BasePage');
-
-class LoginPage extends BasePage {
+class LoginPage extends require('./BasePage') {
     constructor() {
         super();
         this.baseUrl = '/practice-test-login/';
@@ -16,55 +14,48 @@ class LoginPage extends BasePage {
     }
 
     async navigate() {
-        await super.navigate(this.url);
+        cy.visit(this.url);
     }
 
     async enterUsername(username) {
-        await this.type(this.selectors.usernameInput, username);
+        cy.get(this.selectors.usernameInput).clear().type(username);
     }
 
     async enterPassword(password) {
-        await this.type(this.selectors.passwordInput, password);
+        cy.get(this.selectors.passwordInput).clear().type(password);
     }
 
     async clickSubmit() {
-        await this.click(this.selectors.submitButton);
+        cy.get(this.selectors.submitButton).click();
     }
 
     async verifyLoginFormVisible() {
-        await this.shouldBeVisible(this.selectors.usernameInput);
-        await this.shouldBeVisible(this.selectors.passwordInput);
+        cy.get(this.selectors.usernameInput).should('be.visible');
+        cy.get(this.selectors.passwordInput).should('be.visible');
     }
 
     async verifyErrorMessageVisible() {
-        await this.shouldBeVisible(this.selectors.errorMessage);
+        cy.get(this.selectors.errorMessage).should('be.visible');
     }
 
     async verifySuccessfulLogin() {
-        // Get the current URL and check if it contains 'logged-in-successfully'
-        const url = await this.getCurrentUrl();
-        if (!url.includes('logged-in-successfully')) {
-            throw new Error(`URL should contain 'logged-in-successfully' but was: ${url}`);
-        }
+        cy.url().should('include', 'logged-in-successfully');
     }
 
     async verifyStillOnLoginPage() {
-        // Get the current URL and check if it contains 'practice-test-login'
-        const url = await this.getCurrentUrl();
-        if (!url.includes('practice-test-login')) {
-            throw new Error(`URL should contain 'practice-test-login' but was: ${url}`);
-        }
+        cy.url().should('include', 'practice-test-login');
     }
 
-    // Additional methods for other login page interactions
     async togglePasswordVisibility() {
-        await this.click(this.selectors.showPasswordButton);
+        cy.get(this.selectors.showPasswordButton).click();
     }
 
     async verifyPasswordVisible() {
-        // We will use adapter-specific methods for this in the future
-        // For now, just using basic adapter methods for compatibility
-        await this.adapter.waitFor(this.selectors.passwordInput);
+        cy.get(this.selectors.passwordInput).should('be.visible');
+    }
+
+    async verifyTitleContains(expected) {
+        cy.title().should('include', expected);
     }
 }
 

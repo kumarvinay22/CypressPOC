@@ -22,5 +22,6 @@ When('I click on {string}', function (buttonText) {
 });
 
 Then('I should see the result', function () {
-  cy.wait(1000);
+  // Example assertion: check for a visible heading or result message
+  cy.get('h1, h2, .result, .success, .main-content').should('be.visible');
 });

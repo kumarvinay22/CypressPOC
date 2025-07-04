@@ -1,42 +1,14 @@
 /**
  * Base page object using the test adapter pattern
- * This file should NOT import Playwright or any Node.js modules directly
+ * This file should only contain Cypress-compatible code
  */
-const createAdapter = require('../support/adapter-factory');
-
 class BasePage {
-    constructor() {
-        this._adapter = null;
-        this._driver = null;
-    }
-
-    /**
-     * Getter for adapter with lazy initialization
-     * This ensures the adapter is only created when actually needed,
-     * after browser setup is complete
-     */
-    get adapter() {
-        if (!this._adapter) {
-            this._adapter = createAdapter();
-            this._driver = this._adapter.driver;
-        }
-        return this._adapter;
-    }
-
-    /**
-     * Getter for driver name
-     */
-    get driver() {
-        // Make sure adapter is initialized
-        return this.adapter.driver;
-    }
-    
     /**
      * Navigate to a URL
      * @param {string} url - The URL to navigate to
      */
     async navigate(url) {
-        await this.adapter.goto(url);
+        cy.visit(url);
     }
     
     /**
@@ -44,7 +16,7 @@ class BasePage {
      * @param {string} url - The URL to navigate to
      */
     async visit(url) {
-        await this.adapter.goto(url);
+        cy.visit(url);
     }
     
     /**
@@ -53,7 +25,7 @@ class BasePage {
      * @param {string} text - Text to enter
      */
     async type(selector, text) {
-        await this.adapter.fill(selector, text);
+        cy.get(selector).clear().type(text);
     }
 
     /**
@@ -61,7 +33,7 @@ class BasePage {
      * @param {string} selector - CSS selector
      */
     async click(selector) {
-        await this.adapter.click(selector);
+        cy.get(selector).click();
     }
 
     /**
@@ -69,7 +41,7 @@ class BasePage {
      * @param {string} selector - CSS selector 
      */
     async shouldBeVisible(selector) {
-        await this.adapter.isVisible(selector);
+        cy.get(selector).should('be.visible');
     }
 
     /**
@@ -78,7 +50,11 @@ class BasePage {
      * @param {string} text - Text to look for
      */
     async shouldContainText(selector, text) {
-        await this.adapter.containsText(selector, text);
+        if (selector === 'body') {
+            cy.contains(text).should('be.visible');
+        } else {
+            cy.get(selector).should('contain', text);
+        }
     }
 
     /**
@@ -86,7 +62,7 @@ class BasePage {
      * @param {string} urlPart - Text that should be in the URL
      */
     async shouldHaveUrl(urlPart) {
-        await this.adapter.urlShouldContain(urlPart);
+        cy.url().should('include', urlPart);
     }
 
     /**
@@ -94,10 +70,7 @@ class BasePage {
      * @param {string} expectedTitle - Text that should be in the title
      */
     async getTitle(expectedTitle) {
-        const title = await this.adapter.title();
-        if (!title.includes(expectedTitle)) {
-            throw new Error(`Expected page title to contain "${expectedTitle}" but got "${title}"`);
-        }
+        cy.title().should('include', expectedTitle);
     }
     
     /**
@@ -105,7 +78,7 @@ class BasePage {
      * @returns {Promise<string>} The current URL
      */
     async getCurrentUrl() {
-        return this.adapter.getCurrentUrl();
+        return cy.url();
     }
     
     /**
@@ -113,7 +86,7 @@ class BasePage {
      * @param {string} selector - Element ID/selector
      */
     async findNonExistentElement(selector) {
-        await this.adapter.findNonExistentElement(selector);
+        cy.get(`#${selector}`).should('be.visible');
     }
 }
 

@@ -8,20 +8,18 @@ const path = require('path');
 
 module.exports = defineConfig({
   e2e: {
-    specPattern: testConfig.testing.features.length > 0 
-      ? testConfig.testing.features 
-      : 'features/**/*.feature',
+    specPattern: 'features/**/*.feature',
     supportFile: 'cypress/support/e2e.js',
-    baseUrl: testConfig.environment.baseUrl,
-    video: testConfig.reporting.video,
-    screenshotOnRunFailure: testConfig.reporting.screenshots,
-    videosFolder: `${testConfig.reporting.outputDir}/videos`,
-    screenshotsFolder: `${testConfig.reporting.outputDir}/screenshots`,
-    defaultCommandTimeout: testConfig.testing.timeouts.default,
-    pageLoadTimeout: testConfig.testing.timeouts.pageLoad,
-    requestTimeout: testConfig.testing.timeouts.request,
-    responseTimeout: testConfig.testing.timeouts.response,
-    retries: testConfig.runner.retries,
+    baseUrl: 'https://practicetestautomation.com',
+    video: true,
+    screenshotOnRunFailure: true,
+    videosFolder: 'reports/videos',
+    screenshotsFolder: 'reports/screenshots',
+    defaultCommandTimeout: 10000,
+    pageLoadTimeout: 30000,
+    requestTimeout: 10000,
+    responseTimeout: 10000,
+    retries: testConfig.retries,
     stepDefinitions: [
       'features/step_definitions/*.js'
     ],
@@ -29,12 +27,8 @@ module.exports = defineConfig({
       '**/node_modules/**'
     ],
     async setupNodeEvents(on, config) {
-      // Set TEST_RUNNER for consistency
       process.env.TEST_RUNNER = 'cypress';
-      
-      // Apply the cucumber plugin with our configuration
       await addCucumberPreprocessorPlugin(on, config);
-      
       on(
         'file:preprocessor',
         createBundler({
@@ -43,12 +37,9 @@ module.exports = defineConfig({
             {
               name: 'node-polyfills',
               setup(build) {
-                // Mark node builtin modules as external to prevent esbuild from trying to bundle them
                 build.onResolve({ filter: /^(fs|path|crypto|http|https|stream|util|os|tls|zlib|net|dns|child_process|module|readline|constants|inspector|async_hooks|http2|v8|node:.*|chromium-bidi.*|worker_threads)$/ }, (args) => {
                   return { path: args.path, external: true };
                 });
-                
-                // Configure esbuild to understand we're targeting the browser
                 build.initialOptions.platform = 'browser';
                 build.initialOptions.target = ['chrome100', 'firefox100', 'safari15'];
               }
@@ -57,32 +48,32 @@ module.exports = defineConfig({
         })
       );
       // Device emulation
-      const browser = process.env.BROWSER || testConfig.runner.browser;
-      const device = process.env.DEVICE || testConfig.device.type;
-      console.log('[CYPRESS CONFIG] Resolved browser:', browser);
-      console.log('[CYPRESS CONFIG] Resolved device:', device);
-      
-      // Apply custom viewport if enabled, otherwise use device preset
-      if (testConfig.device.customViewport.enabled) {
-        config.viewportWidth = testConfig.device.customViewport.width;
-        config.viewportHeight = testConfig.device.customViewport.height;
-        console.log('[CYPRESS CONFIG] Using custom viewport:', config.viewportWidth, 'x', config.viewportHeight);
-      } else if (browserConfig.cypress[browser]?.devices?.[device]) {
+      const browser = process.env.BROWSER || testConfig.browser;
+      const device = process.env.DEVICE || testConfig.device;
+      const headed = typeof process.env.HEADED !== 'undefined' ? process.env.HEADED === 'true' : testConfig.headed;
+      console.log(`\n[DEBUG] Using browser: ${browser}, device: ${device}, headed: ${headed}`);
+      if (browserConfig.cypress[browser]?.devices?.[device]) {
         const deviceConfig = browserConfig.cypress[browser].devices[device];
+        console.log(`[DEBUG] Device config:`, deviceConfig);
         config.viewportWidth = deviceConfig.viewportWidth;
         config.viewportHeight = deviceConfig.viewportHeight;
         config.userAgent = deviceConfig.userAgent;
         config.isMobile = deviceConfig.isMobile;
         config.deviceScaleFactor = deviceConfig.deviceScaleFactor;
-        console.log('[CYPRESS CONFIG] Using device preset:', device);
       }
-      
-      // Set environment variables from test config
+      // Set environment variables for tags
       config.env = {
         ...config.env,
-        ...testConfig.environment.vars,
-        TAGS: process.env.TAGS || testConfig.testing.tags
+        TAGS: process.env.TAGS || testConfig.tags
       };
+      // Set headed/headless mode for Cypress CLI
+      if (!headed) {
+        config.browser = browser;
+        config.headless = true;
+      } else {
+        config.browser = browser;
+        config.headless = false;
+      }
       return config;
     },
   },

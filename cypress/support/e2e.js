@@ -1,6 +1,8 @@
+// Cypress e2e support file
 import './commands';
 import { Before } from '@badeball/cypress-cucumber-preprocessor';
 const browserConfig = require('../../config/browsers');
+import testConfig from '../../test.config';
 
 // Set a global flag that can be checked to confirm we're in Cypress
 window.RUNNER_TYPE = 'cypress';
@@ -9,10 +11,6 @@ window.RUNNER_TYPE = 'cypress';
 // This helps with the "Could not resolve node:util" error
 window.process = window.process || require('process');
 window.Buffer = window.Buffer || require('buffer').Buffer;
-
-// Mock Playwright modules to prevent Cypress from trying to bundle them
-const mockPlaywright = require('./empty-module');
-window.playwright = mockPlaywright;
 
 // Add a global variable that Cypress step definitions can check
 window.isCypress = true;
@@ -40,3 +38,20 @@ before(() => {
         });
     }
 });
+
+if (testConfig.mockEnabled) {
+  const baseUrl = 'practicetestautomation.com';
+  const mocks = require(`../mocks/${baseUrl}.js`);
+
+  beforeEach(() => {
+    // Mock login API (example: adjust endpoint as needed)
+    cy.intercept('POST', '**/api/login', (req) => {
+      if (req.body.password === 'Password123') {
+        req.reply(mocks.login.success);
+      } else {
+        req.reply(mocks.login.failure);
+      }
+    });
+    // Add more intercepts for other endpoints as needed
+  });
+}
