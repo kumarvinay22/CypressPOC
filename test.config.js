@@ -5,7 +5,7 @@
 
 module.exports = {
   // Browser: 'chrome', 'firefox', 'edge'
-  browser: 'chrome',
+  browser: 'edge',
 
   // Headed mode: true = headed, false = headless
   headed: true,
