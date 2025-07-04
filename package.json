@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run clean && node scripts/run-cypress.js && npm run report:debug",
     "test:open": "npm run clean && npx cypress open --browser ${npm_package_config_browser}",
-    "clean": "powershell -Command \"if(Test-Path reports) { Remove-Item -Path reports -Recurse -Force }; New-Item -ItemType Directory -Force -Path reports,reports/screenshots,reports/videos,reports/cucumber\"",
+    "clean": "rimraf reports && mkdir -p reports/screenshots reports/videos reports/cucumber",
     "report:debug": "node cucumber-reporter-debug.js",
     "setup": "npm install && npx cypress install && npm run clean",
     "posttest": "npm run report:debug"
